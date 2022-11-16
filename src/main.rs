@@ -1,6 +1,6 @@
 fn main() {
     // Create board
-    let mut board: [Tile; 64] = read_fen_string("rnbkqbnr/pppppppp/8/8/8/8/PPPPPPPP/RBNQKBNR");
+    let mut board: [Tile; 64] = read_fen_string("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
 
     initialise_window(&board);
 }
