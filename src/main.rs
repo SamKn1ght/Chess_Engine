@@ -124,7 +124,7 @@ use opengl_graphics::{GlGraphics, OpenGL, Texture, TextureSettings};
 
 use glutin_window::GlutinWindow as Window;
 
-use piston::input::{RenderArgs, RenderEvent, UpdateArgs, UpdateEvent};
+use piston::input::{RenderArgs, RenderEvent};
 use piston::{MouseCursorEvent, Button, MouseButton, PressEvent};
 use piston::event_loop::{EventSettings, Events};
 use piston::window::WindowSettings;
@@ -164,7 +164,6 @@ fn initialise_window(board: &mut[Tile; 64]) {
         }
     }
     
-    
     let mut app : App = App {
         gl : GlGraphics::new(opengl),
         piece_images,
@@ -177,10 +176,6 @@ fn initialise_window(board: &mut[Tile; 64]) {
     while let Some(e) = events.next(&mut window) {
         if let Some(args) = e.render_args() {
             app.render(&args, &board, &mouse_position);
-        }
-
-        if let Some(args) = e.update_args() {
-            app.update(&args);
         }
 
         if let Some(mouse_rel) = e.mouse_cursor_args() {
@@ -253,10 +248,6 @@ impl App {
                 }
             }
         });
-    }
-
-    fn update(&mut self, args: &UpdateArgs) {
-        return;
     }
 
     fn update_selected_tile(&mut self, x_index : f64, y_index : f64, board : &mut[Tile ; 64]) {
