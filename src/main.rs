@@ -70,8 +70,8 @@ impl Tile {
 
         match self.color {
             Some(Colors::Black) => index += 6, // Uses the black piece indexes (2nd row)
+            Some(Colors::White) => index += 0, // Uses the white piece indexes (1st row)
             None => return None, // No piece is in this Tile
-            _ => ()
         }
 
         match self.piece {
@@ -81,7 +81,7 @@ impl Tile {
             Some(Pieces::Knight) => index += 3, // 4th image in the row
             Some(Pieces::Rook {..}) => index += 4, // 5th image in the row
             Some(Pieces::Pawn {..}) => index += 5, // 6th image in the row
-            _ => ()
+            None => ()
         }
 
         return Some(index);
@@ -157,6 +157,7 @@ fn initialise_window(board: &mut[Tile; 64]) {
         Texture::from_path(Path::new("./resources/BlackPawn.png"), &texture_settings).unwrap()
     ];
     let mut image_locations : [Image; 64] = [Image::new() ; 64];
+    // Creates the places where images can be drawn
     for y in 0..8 {
         for x in 0..8 {
             image_locations[y * 8 + x] = Image::new()
@@ -202,6 +203,7 @@ impl App {
     fn render(&mut self, args: &RenderArgs, board : &[Tile; 64], mouse_position : &[f64 ; 2]) {
         use graphics::*;
 
+        // Color constants
         const BLACK  : [f32; 4] = [0.484f32, 0.582f32, 0.363f32, 1.00f32]; // (actually green)
         const WHITE  : [f32; 4] = [0.929f32, 0.929f32, 0.832f32, 1.00f32]; // (actually cream)
         const YELLOW : [f32; 4] = [0.871f32, 0.896f32, 0.375f32, 1.00f32];
@@ -209,8 +211,10 @@ impl App {
 
         // Draw all needed elements
         self.gl.draw(args.viewport(), |c, gl| {
+            // Fills the board black
             clear([0f32, 0f32, 0f32, 1f32], gl);
 
+            // Draws the board squares
             let mut square : [f64 ; 4];
             for x in 0..8 {
                 for y in 0..8 {
@@ -224,27 +228,28 @@ impl App {
                     }
                 }
             }
-            match self.selected_tile {
-                None => (),
-                _ => {
-                    // Get coordinates of the tile
-                    let y_position : f64 = (self.selected_tile.unwrap() >> 3) as f64 * 100f64;
-                    let x_position : f64 = (self.selected_tile.unwrap() % 8) as f64 * 100f64;
-                    // Draws the square selected as yellow
-                    rectangle(YELLOW, rectangle::square(x_position, y_position, 100f64), c.transform, gl);
-                }
+
+            // Highlights the selected tile
+            if let Some(_) = self.selected_tile {
+                // Get coordinates of the tile
+                let y_position : f64 = (self.selected_tile.unwrap() >> 3) as f64 * 100f64;
+                let x_position : f64 = (self.selected_tile.unwrap() % 8) as f64 * 100f64;
+                // Draws the square selected as yellow
+                rectangle(YELLOW, rectangle::square(x_position, y_position, 100f64), c.transform, gl);
             }
+
+            // Highlights the square under the mouse cursor
             rectangle(PALE_YELLOW, rectangle::square((mouse_position[0] / 100f64).floor() * 100f64, (mouse_position[1] / 100f64).floor() * 100f64, 100f64), c.transform, gl);
             
-
+            // Draws piece images
             let mut image_index: Option<usize>;
             let draw_state : DrawState = DrawState::new_alpha();
+            // Creates a matrix transformation to scale down the images
             let piece_transform = c.transform.scale(0.5, 0.5);
             for i in 0..64 {
                 image_index = board[i].get_piece_image_index();
-                match image_index {
-                    None => (),
-                    _ => self.image_locations[i].draw(&self.piece_images[image_index.unwrap()], &draw_state, piece_transform, gl)
+                if let Some(_) = image_index {
+                    self.image_locations[i].draw(&self.piece_images[image_index.unwrap()], &draw_state, piece_transform, gl)
                 }
             }
         });
