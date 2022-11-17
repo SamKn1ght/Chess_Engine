@@ -125,7 +125,7 @@ use opengl_graphics::{GlGraphics, OpenGL, Texture, TextureSettings};
 use glutin_window::GlutinWindow as Window;
 
 use piston::input::{RenderArgs, RenderEvent};
-use piston::{MouseCursorEvent, Button, MouseButton, PressEvent};
+use piston::{MouseCursorEvent, Button, MouseButton, PressEvent, Key};
 use piston::event_loop::{EventSettings, Events};
 use piston::window::WindowSettings;
 
@@ -137,7 +137,6 @@ fn initialise_window(board: &mut[Tile; 64]) {
 
     let mut window: Window = WindowSettings::new("Chess", [800, 800])
         .graphics_api(opengl)
-        .exit_on_esc(true)
         .build()
         .unwrap();
 
@@ -188,6 +187,15 @@ fn initialise_window(board: &mut[Tile; 64]) {
                 let x_index = (mouse_position[0] / 100f64).floor();
                 let y_index = (mouse_position[1] / 100f64).floor();
                 app.update_selected_tile(x_index, y_index, board);
+            }
+            match button {
+                Button::Mouse(MouseButton::Left) => {
+
+                },
+                Button::Keyboard(Key::Escape) => {
+                    app.clear_selected_tile();
+                },
+                _ => ()
             }
         }
     }
@@ -267,7 +275,7 @@ impl App {
                             board[current_tile].piece = None;
                             board[current_tile].color = None;
                         }
-                        self.selected_tile = None;
+                        self.clear_selected_tile();
                     },
                     None => {
                         self.selected_tile = Some(new_tile);
@@ -278,6 +286,10 @@ impl App {
                 self.selected_tile = Some(new_tile);
             }
         }
+    }
+
+    fn clear_selected_tile(&mut self) {
+        self.selected_tile = None;
     }
 
 }
