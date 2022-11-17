@@ -47,7 +47,7 @@ fn read_fen_string(string : &str) -> [Tile; 64] {
                 113 => board[index].piece = Some(Pieces::Queen),
                 114 => board[index].piece = Some(Pieces::Rook),
                 110 => board[index].piece = Some(Pieces::Knight),
-                98 => board[index].piece = Some(Pieces::Bishop),
+                98  => board[index].piece = Some(Pieces::Bishop),
                 112 => board[index].piece = Some(Pieces::Pawn),
                 _ => () // This will never be reached
             }
@@ -116,6 +116,7 @@ use std::path::Path;
 use glutin_window::GlutinWindow as Window;
 use graphics::Image;
 use opengl_graphics::{GlGraphics, OpenGL, Texture, TextureSettings};
+use piston::{MouseCursorEvent, Button, MouseButton, PressEvent};
 use piston::event_loop::{EventSettings, Events};
 use piston::input::{RenderArgs, RenderEvent, UpdateArgs, UpdateEvent};
 use graphics::rectangle::square;
@@ -157,17 +158,31 @@ fn initialise_window(board: &[Tile; 64]) {
     let mut app : App = App {
         gl : GlGraphics::new(opengl),
         piece_images,
-        image_locations
+        image_locations,
+        selected_tile : None
     };
 
+    let mut mouse_position : [f64 ; 2] = [0f64, 0f64];
     let mut events = Events::new(EventSettings::new());
     while let Some(e) = events.next(&mut window) {
         if let Some(args) = e.render_args() {
-            app.render(&args, &board);
+            app.render(&args, &board, &mouse_position);
         }
 
         if let Some(args) = e.update_args() {
             app.update(&args);
+        }
+
+        if let Some(mouse_rel) = e.mouse_cursor_args() {
+            mouse_position = mouse_rel;
+        }
+
+        if let Some(button) = e.press_args() {
+            if let Button::Mouse(MouseButton::Left) = button {
+                let x_index = (mouse_position[0] / 100f64).floor();
+                let y_index = (mouse_position[1] / 100f64).floor();
+                app.selected_tile = Some((y_index * 8f64 + x_index) as usize);
+            }
         }
     }
 }
@@ -175,15 +190,19 @@ fn initialise_window(board: &[Tile; 64]) {
 struct App {
     gl : GlGraphics,
     piece_images : [Texture ; 12],
-    image_locations : [Image ; 64]
+    image_locations : [Image ; 64],
+    pub selected_tile : Option<usize>
 }
 impl App {
-    fn render(&mut self, args: &RenderArgs, board : &[Tile; 64]) {
+    fn render(&mut self, args: &RenderArgs, board : &[Tile; 64], mouse_position : &[f64 ; 2]) {
         use graphics::*;
 
-        const BLACK: [f32; 4] = [0.484f32, 0.582f32, 0.363f32, 1.00f32]; // Black square color (actually green)
-        const WHITE: [f32; 4] = [0.929f32, 0.929f32, 0.832f32, 1.00f32]; // White square color (actually cream)
+        const BLACK  : [f32; 4] = [0.484f32, 0.582f32, 0.363f32, 1.00f32]; // (actually green)
+        const WHITE  : [f32; 4] = [0.929f32, 0.929f32, 0.832f32, 1.00f32]; // (actually cream)
+        const YELLOW : [f32; 4] = [0.871f32, 0.896f32, 0.375f32, 1.00f32];
+        const PALE_YELLOW : [f32; 4] = [0.871f32, 0.896f32, 0.375f32, 0.50f32];
 
+        // Draw all needed elements
         self.gl.draw(args.viewport(), |c, gl| {
             clear([0f32, 0f32, 0f32, 1f32], gl);
 
@@ -200,6 +219,18 @@ impl App {
                     }
                 }
             }
+            match self.selected_tile {
+                None => (),
+                _ => {
+                    // Get coordinates of the tile
+                    let y_position : f64 = (self.selected_tile.unwrap() >> 3) as f64 * 100f64;
+                    let x_position : f64 = (self.selected_tile.unwrap() % 8) as f64 * 100f64;
+                    // Draws the square selected as yellow
+                    rectangle(YELLOW, rectangle::square(x_position, y_position, 100f64), c.transform, gl);
+                }
+            }
+            rectangle(PALE_YELLOW, rectangle::square((mouse_position[0] / 100f64).floor() * 100f64, (mouse_position[1] / 100f64).floor() * 100f64, 100f64), c.transform, gl);
+            
 
             let mut image_index: Option<usize>;
             let draw_state : DrawState = DrawState::new_alpha();
