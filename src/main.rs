@@ -113,14 +113,17 @@ extern crate piston;
 
 use std::path::Path;
 
-use glutin_window::GlutinWindow as Window;
-use graphics::Image;
 use opengl_graphics::{GlGraphics, OpenGL, Texture, TextureSettings};
+
+use glutin_window::GlutinWindow as Window;
+
+use piston::input::{RenderArgs, RenderEvent, UpdateArgs, UpdateEvent};
 use piston::{MouseCursorEvent, Button, MouseButton, PressEvent};
 use piston::event_loop::{EventSettings, Events};
-use piston::input::{RenderArgs, RenderEvent, UpdateArgs, UpdateEvent};
-use graphics::rectangle::square;
 use piston::window::WindowSettings;
+
+use graphics::rectangle::square;
+use graphics::Image;
 
 fn initialise_window(board: &[Tile; 64]) {
     let opengl = OpenGL::V3_2;
