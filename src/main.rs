@@ -2,7 +2,7 @@ fn main() {
     // Create board
     let mut board: [Tile; 64] = read_fen_string("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
 
-    initialise_window(&board);
+    initialise_window(&mut board);
 }
 
 fn read_fen_string(string : &str) -> [Tile; 64] {
@@ -27,12 +27,12 @@ fn read_fen_string(string : &str) -> [Tile; 64] {
 
             // Compares the character utf-8 code to the correct piece
             match characters[i] {
-                75 => board[index].piece = Some(Pieces::King),
+                75 => board[index].piece = Some(Pieces::King {has_moved : false}),
                 81 => board[index].piece = Some(Pieces::Queen),
-                82 => board[index].piece = Some(Pieces::Rook),
+                82 => board[index].piece = Some(Pieces::Rook {has_moved : false}),
                 78 => board[index].piece = Some(Pieces::Knight),
                 66 => board[index].piece = Some(Pieces::Bishop),
-                80 => board[index].piece = Some(Pieces::Pawn),
+                80 => board[index].piece = Some(Pieces::Pawn {has_moved : false, double_moved : false}),
                 _ => () // This will never be reached
             }
 
@@ -43,12 +43,12 @@ fn read_fen_string(string : &str) -> [Tile; 64] {
 
             // Compares the character utf-8 code to the correct piece
             match characters[i] {
-                107 => board[index].piece = Some(Pieces::King),
+                107 => board[index].piece = Some(Pieces::King {has_moved : false}),
                 113 => board[index].piece = Some(Pieces::Queen),
-                114 => board[index].piece = Some(Pieces::Rook),
+                114 => board[index].piece = Some(Pieces::Rook {has_moved : false}),
                 110 => board[index].piece = Some(Pieces::Knight),
                 98  => board[index].piece = Some(Pieces::Bishop),
-                112 => board[index].piece = Some(Pieces::Pawn),
+                112 => board[index].piece = Some(Pieces::Pawn {has_moved : false, double_moved : false}),
                 _ => () // This will never be reached
             }
 
@@ -75,12 +75,12 @@ impl Tile {
         }
 
         match self.piece {
-            Some(Pieces::King) => index += 0, // 1st image in the row
+            Some(Pieces::King {..}) => index += 0, // 1st image in the row
             Some(Pieces::Queen) => index += 1, // 2nd image in the row
             Some(Pieces::Bishop) => index += 2, // 3rd image in the row
             Some(Pieces::Knight) => index += 3, // 4th image in the row
-            Some(Pieces::Rook) => index += 4, // 5th image in the row
-            Some(Pieces::Pawn) => index += 5, // 6th image in the row
+            Some(Pieces::Rook {..}) => index += 4, // 5th image in the row
+            Some(Pieces::Pawn {..}) => index += 5, // 6th image in the row
             _ => ()
         }
 
@@ -88,7 +88,7 @@ impl Tile {
     } 
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 enum Colors {
     White,
     Black
@@ -96,12 +96,19 @@ enum Colors {
 
 #[derive(Debug, Copy, Clone)]
 enum Pieces {
-    King,
+    King {
+        has_moved : bool
+    },
     Queen,
-    Rook,
+    Rook {
+        has_moved : bool
+    },
     Knight,
     Bishop,
-    Pawn
+    Pawn {
+        has_moved : bool,
+        double_moved : bool
+    }
 }
 
 // GUI Stuff
@@ -125,7 +132,7 @@ use piston::window::WindowSettings;
 use graphics::rectangle::square;
 use graphics::Image;
 
-fn initialise_window(board: &[Tile; 64]) {
+fn initialise_window(board: &mut[Tile; 64]) {
     let opengl = OpenGL::V3_2;
 
     let mut window: Window = WindowSettings::new("Chess", [800, 800])
@@ -184,7 +191,7 @@ fn initialise_window(board: &[Tile; 64]) {
             if let Button::Mouse(MouseButton::Left) = button {
                 let x_index = (mouse_position[0] / 100f64).floor();
                 let y_index = (mouse_position[1] / 100f64).floor();
-                app.selected_tile = Some((y_index * 8f64 + x_index) as usize);
+                app.update_selected_tile(x_index, y_index, board);
             }
         }
     }
@@ -194,7 +201,7 @@ struct App {
     gl : GlGraphics,
     piece_images : [Texture ; 12],
     image_locations : [Image ; 64],
-    pub selected_tile : Option<usize>
+    selected_tile : Option<usize>
 }
 impl App {
     fn render(&mut self, args: &RenderArgs, board : &[Tile; 64], mouse_position : &[f64 ; 2]) {
@@ -250,6 +257,31 @@ impl App {
 
     fn update(&mut self, args: &UpdateArgs) {
         return;
+    }
+
+    fn update_selected_tile(&mut self, x_index : f64, y_index : f64, board : &mut[Tile ; 64]) {
+        let new_tile: usize = (y_index * 8f64 + x_index) as usize;
+        match self.selected_tile {
+            Some(_) => {
+                let current_tile = self.selected_tile.unwrap();
+                match board[current_tile].piece {
+                    Some(_) => {
+                        if board[current_tile].color != board[new_tile].color {
+                            board[new_tile] = board[current_tile];
+                            board[current_tile].piece = None;
+                            board[current_tile].color = None;
+                        }
+                        self.selected_tile = None;
+                    },
+                    None => {
+                        self.selected_tile = Some(new_tile);
+                    }
+                }
+            },
+            None => {
+                self.selected_tile = Some(new_tile);
+            }
+        }
     }
 
 }
