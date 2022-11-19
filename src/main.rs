@@ -97,21 +97,110 @@ enum Colors {
     Black
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 enum Pieces {
-    King {
-        has_moved : bool
-    },
+    King {has_moved : bool},
     Queen,
-    Rook {
-        has_moved : bool
-    },
+    Rook {has_moved : bool},
     Knight,
     Bishop,
-    Pawn {
-        has_moved : bool,
-        double_moved : bool
+    Pawn {has_moved : bool, double_moved : bool}
+}
+
+fn generate_legal_tile_movements(board: &[[Tile; 8]; 8], x_index: usize, y_index: usize) -> Option<Vec<[usize; 2]>> {
+    let tile: Tile = board[x_index][y_index];
+    let mut legal_moves: Vec<[usize; 2]> = vec![];
+    match tile.piece {
+        None => return None,
+        Some(_) => {
+            // Allows for safe unwrapping of the tile
+            let piece = tile.piece.unwrap();
+            let color = tile.color.unwrap();
+            match piece {
+
+                Pieces::King { .. } => {
+                    // This syntax allows for the king piece variants to be done
+                    // inside of the general king piece
+                    if let Pieces::King {has_moved : false} = piece {
+                        // Evaluate castling moves
+                        match color {
+                            Colors::White => {
+                                // King side castle
+                                // Check for a rook on the king side, must be of the
+                                // same colour as it has to have not moved
+                                if let Some(Pieces::Rook { has_moved : false }) = board[7][7].piece {
+                                    // Squares in the middle of the two pieces must be empty
+                                    if board[5][7].piece == None && board[6][7].piece == None {
+                                        legal_moves.push([x_index + 2, y_index + 0]);
+                                    }
+                                }
+                                if let Some(Pieces::Rook { has_moved : false }) = board[0][7].piece {
+                                    // Squares in the middle of the two pieces must be empty
+                                    if board[1][7].piece == None && board[2][7].piece == None && board[3][7].piece == None {
+                                        legal_moves.push([x_index - 2, y_index + 0]);
+                                    }
+                                }
+                            },
+                            Colors::Black => {
+                                // King side castle
+
+                            }
+                        }
+                        if x_index > 0 && board[x_index - 1][y_index].color != Some(color) {
+                            legal_moves.push([x_index - 1, y_index + 0]);
+                        }
+                        if x_index < 7 && board[x_index + 1][y_index].color != Some(color) {
+                            legal_moves.push([x_index + 1, y_index + 0]);
+                        }
+                        if y_index > 0  {
+                            if board[x_index][y_index - 1].color != Some(color) {
+                                legal_moves.push([x_index, y_index - 1]);
+                            }
+                            if x_index > 0 && board[x_index - 1][y_index - 1].color != Some(color) {
+                                legal_moves.push([x_index - 1, y_index - 1]);
+                            }
+                            if x_index < 7 && board[x_index + 1][y_index - 1].color != Some(color) {
+                                legal_moves.push([x_index + 1, y_index - 1]);
+                            }
+                        }
+                        if y_index < 7 {
+                            if board[x_index][y_index + 1].color != Some(color) {
+                                legal_moves.push([x_index, y_index + 1]);
+                            }
+                            if x_index > 0 && board[x_index - 1][y_index + 1].color != Some(color) {
+                                legal_moves.push([x_index - 1, y_index + 1]);
+                            }
+                            if x_index < 7 && board[x_index + 1][y_index + 1].color != Some(color) {
+                                legal_moves.push([x_index + 1, y_index + 1]);
+                            }
+                        }
+                    }
+                },
+
+                Pieces::Queen => {
+
+                },
+
+                Pieces::Rook { .. } => {
+
+                },
+
+                Pieces::Bishop => {
+
+                },
+
+                Pieces::Knight => {
+
+                },
+
+                Pieces::Pawn { .. } => {
+
+                }
+            }
+        }
     }
+
+    return Some(legal_moves);
 }
 
 // GUI Stuff
@@ -122,7 +211,6 @@ extern crate opengl_graphics;
 extern crate piston;
 
 use std::path::Path;
-use std::thread::current;
 
 use opengl_graphics::{GlGraphics, OpenGL, Texture, TextureSettings};
 
@@ -220,6 +308,7 @@ impl App {
         const WHITE  : [f32; 4] = [0.929f32, 0.929f32, 0.832f32, 1.00f32]; // (actually cream)
         const YELLOW : [f32; 4] = [0.871f32, 0.896f32, 0.375f32, 1.00f32];
         const PALE_YELLOW : [f32; 4] = [0.871f32, 0.896f32, 0.375f32, 0.50f32];
+        const ORANGE : [f32; 4] = [0.770f32, 0.602f32, 0.426f32, 0.75f32];
 
         // Draw all needed elements
         self.gl.draw(args.viewport(), |c, gl| {
@@ -252,14 +341,27 @@ impl App {
 
             // Highlights the square under the mouse cursor
             rectangle(PALE_YELLOW, rectangle::square((mouse_position[0] / 100f64).floor() * 100f64, (mouse_position[1] / 100f64).floor() * 100f64, 100f64), c.transform, gl);
-            
-            // Draws piece images
+
+            for x in 0..8 {
+                for y in 0..8 {
+                    // Get the legal moves
+                    let legal_moves = generate_legal_tile_movements(board, x, y);
+                    if let Some(_) = legal_moves {
+                        // Highlight the legal moves available
+                        for i in legal_moves.unwrap() {
+                            rectangle(ORANGE, rectangle::square((i[0] * 100) as f64, (i[1] * 100) as f64, 100f64), c.transform, gl);
+                        }
+                    }
+                }
+            }
+
             let mut image_index: Option<usize>;
             let draw_state : DrawState = DrawState::new_alpha();
             // Creates a matrix transformation to scale down the images
             let piece_transform = c.transform.scale(0.5, 0.5);
-            for y in 0..8 {
-                for x in 0..8 {
+            for x in 0..8 {
+                for y in 0..8 {
+                    // Draw the piece images
                     image_index = board[x][y].get_piece_image_index();
                     if let Some(_) = image_index {
                         self.image_locations[x][y].draw(&self.piece_images[image_index.unwrap()], &draw_state, piece_transform, gl)
