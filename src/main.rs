@@ -143,7 +143,20 @@ fn generate_legal_tile_movements(board: &[[Tile; 8]; 8], x_index: usize, y_index
                             },
                             Colors::Black => {
                                 // King side castle
-
+                                // Check for a rook on the king side, must be of the
+                                // same colour as it has to have not moved
+                                if let Some(Pieces::Rook { has_moved : false }) = board[7][0].piece {
+                                    // Squares in the middle of the two pieces must be empty
+                                    if board[5][0].piece == None && board[6][0].piece == None {
+                                        legal_moves.push([x_index + 2, y_index + 0]);
+                                    }
+                                }
+                                if let Some(Pieces::Rook { has_moved : false }) = board[0][7].piece {
+                                    // Squares in the middle of the two pieces must be empty
+                                    if board[1][0].piece == None && board[2][0].piece == None && board[3][0].piece == None {
+                                        legal_moves.push([x_index - 2, y_index + 0]);
+                                    }
+                                }
                             }
                         }
                         if x_index > 0 && board[x_index - 1][y_index].color != Some(color) {
