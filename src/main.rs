@@ -221,7 +221,55 @@ fn generate_legal_tile_movements(board: &[Tile; 64], index: usize) -> Option<Vec
                 },
 
                 Pieces::Rook { .. } => {
-
+                    // All castling mechanics are handled by the King piece
+                    for x in 1..tile.tiles_right + 1 {
+                        match board[index + x].color {
+                            None => { legal_moves.push(index + x); }
+                            Some(_) => {
+                                if board[index + x].color != Some(color) {
+                                    // If opposing color add the take to legal moves
+                                    legal_moves.push(index + x);
+                                }
+                                break;
+                            }
+                        }
+                    }
+                    for x in 1..tile.tiles_left + 1 {
+                        match board[index - x].color {
+                            None => { legal_moves.push(index - x); }
+                            Some(_) => {
+                                if board[index - x].color != Some(color) {
+                                    // If opposing color add the take to legal moves
+                                    legal_moves.push(index - x);
+                                }
+                                break;
+                            }
+                        }
+                    }
+                    for y in (8..tile.tiles_down * 8).step_by(8) {
+                        match board[index + y].color {
+                            None => { legal_moves.push(index + y); }
+                            Some(_) => {
+                                if board[index + y].color != Some(color) {
+                                    // If opposing color add the take to legal moves
+                                    legal_moves.push(index + y);
+                                }
+                                break;
+                            }
+                        }
+                    }
+                    for y in (8..tile.tiles_up * 8).step_by(8) {
+                        match board[index - y].color {
+                            None => { legal_moves.push(index - y); }
+                            Some(_) => {
+                                if board[index - y].color != Some(color) {
+                                    // If opposing color add the take to legal moves
+                                    legal_moves.push(index - y);
+                                }
+                                break;
+                            }
+                        }
+                    }
                 },
 
                 Pieces::Bishop => {
