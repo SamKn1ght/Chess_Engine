@@ -1,61 +1,82 @@
 fn main() {
     // Create board
-    let mut board: [[Tile; 8]; 8] = read_fen_string("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
+    let mut board: [Tile; 64] = read_fen_string("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
 
     initialise_window(&mut board);
 }
 
-fn read_fen_string(string : &str) -> [[Tile; 8]; 8] {
+fn initialise_board() -> [Tile; 64] {
+    let mut board: [Tile; 64] =
+        [
+            Tile {
+                color: None,
+                piece: None,
+                tiles_left: 0,
+                tiles_right: 0,
+                tiles_down: 0,
+                tiles_up: 0
+            }
+            ; 64
+        ];
+    for x in 0..8 {
+        for y in 0..8 {
+            board[y * 8 + x].tiles_left = x;
+            board[y * 8 + x].tiles_right = 7 - x;
+            board[y * 8 + x].tiles_down = 7 - y;
+            board[y * 8 + x].tiles_up = y;
+        }
+    }
+    return board;
+}
+
+fn read_fen_string(string : &str) -> [Tile; 64] {
     let white_piece_codes: [u8; 6] = [75, 81, 82, 78, 66, 80]; // ascii codes for "KQRNBP"
     let black_piece_codes: [u8; 6] = [107, 113, 114, 110, 98, 112]; // ascii codes for "kqrnbp"
-    let mut board : [[Tile; 8]; 8] = [[Tile {color : None, piece : None}; 8]; 8];
-    let mut x_index : usize = 0;
-    let mut y_index : usize = 0;
+    let mut board : [Tile; 64] = initialise_board();
+    let mut index : usize = 0;
     let characters: &[u8] = string.as_bytes();
     for i in 0..characters.len() {
         // If character is a number
         if (characters[i] >= 48) & (characters[i] <= 57) {
             // In ASCII, 48 is 0, so use a -48 offset
             // In ASCII, 57 is 9, which will never be used
-            x_index += (characters[i] - 48u8) as usize;
+            index += (characters[i] - 48u8) as usize;
             continue;
         } else
         if characters[i] == 47 {
-            y_index += 1;
-            x_index  = 0;
             continue;
         } else
         if white_piece_codes.contains(&characters[i]) {
-            board[x_index][y_index].color = Some(Colors::White);
+            board[index].color = Some(Colors::White);
 
             // Compares the character utf-8 code to the correct piece
             match characters[i] {
-                75 => board[x_index][y_index].piece = Some(Pieces::King {has_moved : false}),
-                81 => board[x_index][y_index].piece = Some(Pieces::Queen),
-                82 => board[x_index][y_index].piece = Some(Pieces::Rook {has_moved : false}),
-                78 => board[x_index][y_index].piece = Some(Pieces::Knight),
-                66 => board[x_index][y_index].piece = Some(Pieces::Bishop),
-                80 => board[x_index][y_index].piece = Some(Pieces::Pawn {has_moved : false, double_moved : false}),
+                75 => board[index].piece = Some(Pieces::King {has_moved : false}),
+                81 => board[index].piece = Some(Pieces::Queen),
+                82 => board[index].piece = Some(Pieces::Rook {has_moved : false}),
+                78 => board[index].piece = Some(Pieces::Knight),
+                66 => board[index].piece = Some(Pieces::Bishop),
+                80 => board[index].piece = Some(Pieces::Pawn {has_moved : false, double_moved : false}),
                 _ => () // This will never be reached
             }
 
-            x_index += 1;
+            index += 1;
         } else
         if black_piece_codes.contains(&characters[i]) {
-            board[x_index][y_index].color = Some(Colors::Black);
+            board[index].color = Some(Colors::Black);
 
             // Compares the character utf-8 code to the correct piece
             match characters[i] {
-                107 => board[x_index][y_index].piece = Some(Pieces::King {has_moved : false}),
-                113 => board[x_index][y_index].piece = Some(Pieces::Queen),
-                114 => board[x_index][y_index].piece = Some(Pieces::Rook {has_moved : false}),
-                110 => board[x_index][y_index].piece = Some(Pieces::Knight),
-                98  => board[x_index][y_index].piece = Some(Pieces::Bishop),
-                112 => board[x_index][y_index].piece = Some(Pieces::Pawn {has_moved : false, double_moved : false}),
+                107 => board[index].piece = Some(Pieces::King {has_moved : false}),
+                113 => board[index].piece = Some(Pieces::Queen),
+                114 => board[index].piece = Some(Pieces::Rook {has_moved : false}),
+                110 => board[index].piece = Some(Pieces::Knight),
+                98  => board[index].piece = Some(Pieces::Bishop),
+                112 => board[index].piece = Some(Pieces::Pawn {has_moved : false, double_moved : false}),
                 _ => () // This will never be reached
             }
 
-            x_index += 1;
+            index += 1;
         }
     }
 
@@ -65,7 +86,11 @@ fn read_fen_string(string : &str) -> [[Tile; 8]; 8] {
 #[derive(Debug, Copy, Clone)]
 struct Tile {
     color : Option<Colors>,
-    piece : Option<Pieces>
+    piece : Option<Pieces>,
+    tiles_left : usize,
+    tiles_right : usize,
+    tiles_up : usize,
+    tiles_down : usize
 }
 impl Tile {
     fn get_piece_image_index(&self) -> Option<usize> {
@@ -74,14 +99,14 @@ impl Tile {
         match self.color {
             Some(Colors::Black) => index += 6, // Uses the black piece indexes (2nd row)
             Some(Colors::White) => index += 0, // Uses the white piece indexes (1st row)
-            None => return None, // No piece is in this Tile
+            None => return None,               // No piece is in this Tile
         }
 
         match self.piece {
             Some(Pieces::King {..}) => index += 0, // 1st image in the row
-            Some(Pieces::Queen) => index += 1, // 2nd image in the row
-            Some(Pieces::Bishop) => index += 2, // 3rd image in the row
-            Some(Pieces::Knight) => index += 3, // 4th image in the row
+            Some(Pieces::Queen) => index += 1,     // 2nd image in the row
+            Some(Pieces::Bishop) => index += 2,    // 3rd image in the row
+            Some(Pieces::Knight) => index += 3,    // 4th image in the row
             Some(Pieces::Rook {..}) => index += 4, // 5th image in the row
             Some(Pieces::Pawn {..}) => index += 5, // 6th image in the row
             None => ()
@@ -107,9 +132,9 @@ enum Pieces {
     Pawn {has_moved : bool, double_moved : bool}
 }
 
-fn generate_legal_tile_movements(board: &[[Tile; 8]; 8], x_index: usize, y_index: usize) -> Option<Vec<[usize; 2]>> {
-    let tile: Tile = board[x_index][y_index];
-    let mut legal_moves: Vec<[usize; 2]> = vec![];
+fn generate_legal_tile_movements(board: &[Tile; 64], index: usize) -> Option<Vec<usize>> {
+    let tile: Tile = board[index];
+    let mut legal_moves: Vec<usize> = vec![];
     match tile.piece {
         None => return None,
         Some(_) => {
@@ -121,23 +146,23 @@ fn generate_legal_tile_movements(board: &[[Tile; 8]; 8], x_index: usize, y_index
                 Pieces::King { .. } => {
                     // This syntax allows for the king piece variants to be done
                     // inside of the general king piece
-                    if let Pieces::King {has_moved : false} = piece {
+                    if let Pieces::King { has_moved : false } = piece {
                         // Evaluate castling moves
                         match color {
                             Colors::White => {
                                 // King side castle
                                 // Check for a rook on the king side, must be of the
                                 // same colour as it has to have not moved
-                                if let Some(Pieces::Rook { has_moved : false }) = board[7][7].piece {
+                                if let Some(Pieces::Rook { has_moved : false }) = board[63].piece {
                                     // Squares in the middle of the two pieces must be empty
-                                    if board[5][7].piece == None && board[6][7].piece == None {
-                                        legal_moves.push([x_index + 2, y_index + 0]);
+                                    if board[61].piece == None && board[62].piece == None {
+                                        legal_moves.push(index + 2);
                                     }
                                 }
-                                if let Some(Pieces::Rook { has_moved : false }) = board[0][7].piece {
+                                if let Some(Pieces::Rook { has_moved : false }) = board[56].piece {
                                     // Squares in the middle of the two pieces must be empty
-                                    if board[1][7].piece == None && board[2][7].piece == None && board[3][7].piece == None {
-                                        legal_moves.push([x_index - 2, y_index + 0]);
+                                    if board[57].piece == None && board[58].piece == None && board[59].piece == None {
+                                        legal_moves.push(index - 2);
                                     }
                                 }
                             },
@@ -145,46 +170,47 @@ fn generate_legal_tile_movements(board: &[[Tile; 8]; 8], x_index: usize, y_index
                                 // King side castle
                                 // Check for a rook on the king side, must be of the
                                 // same colour as it has to have not moved
-                                if let Some(Pieces::Rook { has_moved : false }) = board[7][0].piece {
+                                if let Some(Pieces::Rook { has_moved : false }) = board[7].piece {
                                     // Squares in the middle of the two pieces must be empty
-                                    if board[5][0].piece == None && board[6][0].piece == None {
-                                        legal_moves.push([x_index + 2, y_index + 0]);
+                                    if board[5].piece == None && board[6].piece == None {
+                                        legal_moves.push(index + 2);
                                     }
                                 }
-                                if let Some(Pieces::Rook { has_moved : false }) = board[0][7].piece {
+                                if let Some(Pieces::Rook { has_moved : false }) = board[0].piece {
                                     // Squares in the middle of the two pieces must be empty
-                                    if board[1][0].piece == None && board[2][0].piece == None && board[3][0].piece == None {
-                                        legal_moves.push([x_index - 2, y_index + 0]);
+                                    if board[1].piece == None && board[2].piece == None && board[3].piece == None {
+                                        legal_moves.push(index - 2);
                                     }
                                 }
                             }
                         }
-                        if x_index > 0 && board[x_index - 1][y_index].color != Some(color) {
-                            legal_moves.push([x_index - 1, y_index + 0]);
+
+                        if tile.tiles_left > 0 && board[index - 1].color != Some(color) {
+                            legal_moves.push(index - 1);
                         }
-                        if x_index < 7 && board[x_index + 1][y_index].color != Some(color) {
-                            legal_moves.push([x_index + 1, y_index + 0]);
+                        if tile.tiles_right > 0 && board[index + 1].color != Some(color) {
+                            legal_moves.push(index + 1);
                         }
-                        if y_index > 0  {
-                            if board[x_index][y_index - 1].color != Some(color) {
-                                legal_moves.push([x_index, y_index - 1]);
+                        if tile.tiles_up > 0 {
+                            if board[index - 8].color != Some(color) {
+                                legal_moves.push(index - 8);
                             }
-                            if x_index > 0 && board[x_index - 1][y_index - 1].color != Some(color) {
-                                legal_moves.push([x_index - 1, y_index - 1]);
+                            if tile.tiles_left > 0 && board[index - 9].color != Some(color) {
+                                legal_moves.push(index - 9);
                             }
-                            if x_index < 7 && board[x_index + 1][y_index - 1].color != Some(color) {
-                                legal_moves.push([x_index + 1, y_index - 1]);
+                            if tile.tiles_right > 0 && board[index - 7].color != Some(color) {
+                                legal_moves.push(index - 7);
                             }
                         }
-                        if y_index < 7 {
-                            if board[x_index][y_index + 1].color != Some(color) {
-                                legal_moves.push([x_index, y_index + 1]);
+                        if tile.tiles_down > 0 {
+                            if board[index + 8].color != Some(color) {
+                                legal_moves.push(index + 8);
                             }
-                            if x_index > 0 && board[x_index - 1][y_index + 1].color != Some(color) {
-                                legal_moves.push([x_index - 1, y_index + 1]);
+                            if tile.tiles_left > 0 && board[index + 7].color != Some(color) {
+                                legal_moves.push(index + 7);
                             }
-                            if x_index < 7 && board[x_index + 1][y_index + 1].color != Some(color) {
-                                legal_moves.push([x_index + 1, y_index + 1]);
+                            if tile.tiles_right > 0 && board[index + 9].color != Some(color) {
+                                legal_moves.push(index + 9);
                             }
                         }
                     }
@@ -216,6 +242,16 @@ fn generate_legal_tile_movements(board: &[[Tile; 8]; 8], x_index: usize, y_index
     return Some(legal_moves);
 }
 
+fn get_render_coords(index : usize) -> [usize; 2] {
+    let x = index  % 8;
+    let y = index >> 3;
+    [x, y]
+}
+
+fn get_array_index(x: usize, y: usize) -> usize {
+    y * 8 + x
+}
+
 // GUI Stuff
 
 extern crate glutin_window;
@@ -237,7 +273,7 @@ use piston::window::WindowSettings;
 use graphics::rectangle::square;
 use graphics::Image;
 
-fn initialise_window(board: &mut[[Tile; 8]; 8]) {
+fn initialise_window(board: &mut[Tile; 64]) {
     let opengl = OpenGL::V3_2;
 
     let mut window: Window = WindowSettings::new("Chess", [800, 800])
@@ -310,18 +346,18 @@ struct App {
     gl : GlGraphics,
     piece_images : [Texture; 12],
     image_locations : [[Image; 8]; 8],
-    selected_tile : Option<[usize; 2]>
+    selected_tile : Option<usize>
 }
 impl App {
-    fn render(&mut self, args: &RenderArgs, board : &[[Tile; 8]; 8], mouse_position : &[f64; 2]) {
+    fn render(&mut self, args: &RenderArgs, board : &[Tile; 64], mouse_position : &[f64; 2]) {
         use graphics::*;
 
         // Color constants
         const BLACK  : [f32; 4] = [0.484f32, 0.582f32, 0.363f32, 1.00f32]; // (actually green)
         const WHITE  : [f32; 4] = [0.929f32, 0.929f32, 0.832f32, 1.00f32]; // (actually cream)
         const YELLOW : [f32; 4] = [0.871f32, 0.896f32, 0.375f32, 1.00f32];
-        const PALE_YELLOW : [f32; 4] = [0.871f32, 0.896f32, 0.375f32, 0.50f32];
         const ORANGE : [f32; 4] = [0.770f32, 0.602f32, 0.426f32, 0.75f32];
+        const PALE_YELLOW : [f32; 4] = [0.871f32, 0.896f32, 0.375f32, 0.50f32];
 
         // Draw all needed elements
         self.gl.draw(args.viewport(), |c, gl| {
@@ -346,8 +382,9 @@ impl App {
             // Highlights the selected tile
             if let Some(_) = self.selected_tile {
                 // Get coordinates of the tile
-                let x_position : f64 = (self.selected_tile.unwrap()[0] * 100) as f64;
-                let y_position : f64 = (self.selected_tile.unwrap()[1] * 100) as f64;
+                let render_coords = get_render_coords(self.selected_tile.unwrap());
+                let x_position : f64 = (render_coords[0] * 100) as f64;
+                let y_position : f64 = (render_coords[1] * 100) as f64;
                 // Draws the square selected as yellow
                 rectangle(YELLOW, rectangle::square(x_position, y_position, 100f64), c.transform, gl);
             }
@@ -358,11 +395,13 @@ impl App {
             for x in 0..8 {
                 for y in 0..8 {
                     // Get the legal moves
-                    let legal_moves = generate_legal_tile_movements(board, x, y);
+                    let legal_moves = generate_legal_tile_movements(board, get_array_index(x, y));
+                    let mut draw_position: [usize; 2];
                     if let Some(_) = legal_moves {
                         // Highlight the legal moves available
                         for i in legal_moves.unwrap() {
-                            rectangle(ORANGE, rectangle::square((i[0] * 100) as f64, (i[1] * 100) as f64, 100f64), c.transform, gl);
+                            draw_position = get_render_coords(i);
+                            rectangle(ORANGE, rectangle::square((draw_position[0] * 100) as f64, (draw_position[1] * 100) as f64, 100f64), c.transform, gl);
                         }
                     }
                 }
@@ -375,7 +414,7 @@ impl App {
             for x in 0..8 {
                 for y in 0..8 {
                     // Draw the piece images
-                    image_index = board[x][y].get_piece_image_index();
+                    image_index = board[get_array_index(x, y)].get_piece_image_index();
                     if let Some(_) = image_index {
                         self.image_locations[x][y].draw(&self.piece_images[image_index.unwrap()], &draw_state, piece_transform, gl)
                     }
@@ -384,28 +423,28 @@ impl App {
         });
     }
 
-    fn update_selected_tile(&mut self, x_index : f64, y_index : f64, board : &mut[[Tile; 8]; 8]) {
-        let y_index: usize = y_index as usize;
-        let x_index: usize = x_index as usize;
+    fn update_selected_tile(&mut self, x_index : f64, y_index : f64, board : &mut[Tile; 64]) {
+        let new_index: usize = get_array_index(x_index as usize, y_index as usize);
         match self.selected_tile {
             Some(_) => {
                 let current_tile = self.selected_tile.unwrap();
-                match board[current_tile[0]][current_tile[1]].piece {
+                match board[current_tile].piece {
                     Some(_) => {
-                        if board[current_tile[0]][current_tile[1]].color != board[x_index][y_index].color {
-                            board[x_index][y_index] = board[current_tile[0]][current_tile[1]];
-                            board[current_tile[0]][current_tile[1]].piece = None;
-                            board[current_tile[0]][current_tile[1]].color = None;
+                        if board[current_tile].color != board[new_index].color {
+                            board[new_index].piece = board[current_tile].piece;
+                            board[new_index].color = board[current_tile].color;
+                            board[current_tile].piece = None;
+                            board[current_tile].color = None;
                         }
                         self.clear_selected_tile();
                     },
                     None => {
-                        self.selected_tile = Some([x_index, y_index]);
+                        self.selected_tile = Some(new_index);
                     }
                 }
             },
             None => {
-                self.selected_tile = Some([x_index, y_index]);
+                self.selected_tile = Some(new_index);
             }
         }
     }
