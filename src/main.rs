@@ -7,6 +7,7 @@ fn main() {
     initialise_window(&mut board);
 }
 
+#[inline]
 fn initialise_board() -> [Tile; 64] {
     let mut board: [Tile; 64] =
         [
@@ -31,6 +32,7 @@ fn initialise_board() -> [Tile; 64] {
     return board;
 }
 
+#[inline]
 fn read_fen_string(string : &str) -> [Tile; 64] {
     let white_piece_codes: [u8; 6] = [75, 81, 82, 78, 66, 80]; // ascii codes for "KQRNBP"
     let black_piece_codes: [u8; 6] = [107, 113, 114, 110, 98, 112]; // ascii codes for "kqrnbp"
@@ -458,12 +460,14 @@ fn generate_legal_tile_movements(board: &[Tile; 64], index: usize) -> Option<Vec
     return Some(legal_moves);
 }
 
+#[inline]
 fn get_render_coords(index : usize) -> [usize; 2] {
     let x = index  % 8;
     let y = index >> 3;
     [x, y]
 }
 
+#[inline]
 fn get_array_index(x: usize, y: usize) -> usize {
     y * 8 + x
 }
@@ -489,6 +493,7 @@ use piston::window::WindowSettings;
 use graphics::rectangle::square;
 use graphics::Image;
 
+#[inline]
 fn initialise_window(board: &mut[Tile; 64]) {
     let opengl = OpenGL::V3_2;
 
@@ -565,6 +570,7 @@ struct App {
     selected_tile : Option<usize>
 }
 impl App {
+    #[inline]
     fn render(&mut self, args: &RenderArgs, board : &[Tile; 64], mouse_position : &[f64; 2]) {
         use graphics::*;
 
@@ -639,6 +645,7 @@ impl App {
         });
     }
 
+    #[inline]
     fn update_selected_tile(&mut self, x_index : f64, y_index : f64, board : &mut[Tile; 64]) {
         let new_index: usize = get_array_index(x_index as usize, y_index as usize);
         match self.selected_tile {
@@ -665,6 +672,7 @@ impl App {
         }
     }
 
+    #[inline]
     fn clear_selected_tile(&mut self) {
         self.selected_tile = None;
     }
