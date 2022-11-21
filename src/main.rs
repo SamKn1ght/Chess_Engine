@@ -219,7 +219,114 @@ fn generate_legal_tile_movements(board: &[Tile; 64], index: usize) -> Option<Vec
                 },
 
                 Pieces::Queen => {
-
+                    // Calculate moves right
+                    for x in 1..tile.tiles_right + 1 {
+                        match board[index + x].color {
+                            None => { legal_moves.push(index + x); }
+                            Some(_) => {
+                                if board[index + x].color != Some(color) {
+                                    // If opposing color add the take to legal moves
+                                    legal_moves.push(index + x);
+                                }
+                                break;
+                            }
+                        }
+                    }
+                    // Calculate moves left
+                    for x in 1..tile.tiles_left + 1 {
+                        match board[index - x].color {
+                            None => { legal_moves.push(index - x); }
+                            Some(_) => {
+                                if board[index - x].color != Some(color) {
+                                    // If opposing color add the take to legal moves
+                                    legal_moves.push(index - x);
+                                }
+                                break;
+                            }
+                        }
+                    }
+                    // Calculate moves up
+                    for y in (8..tile.tiles_down * 8 + 8).step_by(8) {
+                        match board[index + y].color {
+                            None => { legal_moves.push(index + y); }
+                            Some(_) => {
+                                if board[index + y].color != Some(color) {
+                                    // If opposing color add the take to legal moves
+                                    legal_moves.push(index + y);
+                                }
+                                break;
+                            }
+                        }
+                    }
+                    // Calculate moves down
+                    for y in (8..tile.tiles_up * 8 + 8).step_by(8) {
+                        match board[index - y].color {
+                            None => { legal_moves.push(index - y); }
+                            Some(_) => {
+                                if board[index - y].color != Some(color) {
+                                    // If opposing color add the take to legal moves
+                                    legal_moves.push(index - y);
+                                }
+                                break;
+                            }
+                        }
+                    }
+                    let max_up_left = cmp::min(tile.tiles_up, tile.tiles_left);
+                    let max_down_left = cmp::min(tile.tiles_down, tile.tiles_left);
+                    let max_up_right = cmp::min(tile.tiles_up, tile.tiles_right);
+                    let max_down_right = cmp::min(tile.tiles_down, tile.tiles_right);
+                    // Calculate moves up and left
+                    for z in (9..max_up_left * 9 + 9).step_by(9) {
+                        match board[index - z].color {
+                            None => { legal_moves.push(index - z); }
+                            Some(_) => {
+                                if board[index - z].color != Some(color) {
+                                    // If opposing color add the take to legal moves
+                                    legal_moves.push(index - z);
+                                }
+                                break;
+                            }
+                        }
+                    }
+                    // Calculates moves down and right
+                    for z in (9..max_down_right * 9 + 9).step_by(9) {
+                        match board[index + z].color {
+                            None => { legal_moves.push(index + z); }
+                            Some(_) => {
+                                if board[index + z].color != Some(color) {
+                                    // If opposing color add the take to legal moves
+                                    legal_moves.push(index + z);
+                                }
+                                break;
+                            }
+                        }
+                    }
+                    // Calculate moves up and right
+                    for z in (7..max_up_right * 7 + 7).step_by(7) {
+                        match board[index - z].color {
+                            None => { legal_moves.push(index - z); }
+                            Some(_) => {
+                                if board[index - z].color != Some(color) {
+                                    // If opposing color add the take to legal moves
+                                    legal_moves.push(index - z);
+                                }
+                                break;
+                            }
+                        }
+                    }
+                    // Calculates moves down and left
+                    for z in (7..max_down_left * 7 + 7).step_by(7) {
+                        match board[index + z].color {
+                            None => { legal_moves.push(index + z); }
+                            Some(_) => {
+                                if board[index + z].color != Some(color) {
+                                    // If opposing color add the take to legal moves
+                                    legal_moves.push(index + z);
+                                }
+                                break;
+                            }
+                        }
+                    }
                 },
 
                 Pieces::Rook { .. } => {
