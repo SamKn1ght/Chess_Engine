@@ -448,25 +448,37 @@ fn generate_legal_tile_movements(board: &[Tile; 64], index: usize) -> Option<Vec
 
                 Pieces::Knight => {
                     const OFFSETS: [usize; 4] = [6, 10, 15, 17];
-                    for i in OFFSETS {
-                        if index + i < 64 {
-                            match board[index + i].color {
-                                None => { legal_moves.push(index + i); }
-                                Some(color) => {
-                                    if board[index + i].color != Some(color) {
+                    let positive_condition_evals: [bool; 4] = [
+                        tile.tiles_left >= 2 && tile.tiles_down >= 1,
+                        tile.tiles_right >= 2 && tile.tiles_down >= 1,
+                        tile.tiles_left >= 1 && tile.tiles_down >= 2,
+                        tile.tiles_right >= 1 && tile.tiles_down >= 2
+                    ];
+                    let negative_condition_evals: [bool; 4] = [
+                        tile.tiles_right >= 2 && tile.tiles_up >= 1,
+                        tile.tiles_left >= 2 && tile.tiles_up >= 1,
+                        tile.tiles_right >= 1 && tile.tiles_up >= 2,
+                        tile.tiles_left >= 1 && tile.tiles_up >= 2
+                    ];
+                    for i in 0..4 {
+                        if positive_condition_evals[i] {
+                            match board[index + OFFSETS[i]].color {
+                                None => { legal_moves.push(index + OFFSETS[i]); }
+                                Some(_) => {
+                                    if board[index + OFFSETS[i]].color != Some(color) {
                                         // If opposing color add the take to legal moves
-                                        legal_moves.push(index + i);
+                                        legal_moves.push(index + OFFSETS[i]);
                                     }
                                 }
                             }
                         }
-                        if index > i {
-                            match board[index - i].color {
-                                None => { legal_moves.push(index - i); }
-                                Some(color) => {
-                                    if board[index - i].color != Some(color) {
+                        if negative_condition_evals[i] {
+                            match board[index - OFFSETS[i]].color {
+                                None => { legal_moves.push(index - OFFSETS[i]); }
+                                Some(_) => {
+                                    if board[index - OFFSETS[i]].color != Some(color) {
                                         // If opposing color add the take to legal moves
-                                        legal_moves.push(index - i);
+                                        legal_moves.push(index - OFFSETS[i]);
                                     }
                                 }
                             }
