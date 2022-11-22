@@ -447,7 +447,31 @@ fn generate_legal_tile_movements(board: &[Tile; 64], index: usize) -> Option<Vec
                 },
 
                 Pieces::Knight => {
-
+                    const OFFSETS: [usize; 4] = [6, 10, 15, 17];
+                    for i in OFFSETS {
+                        if index + i < 64 {
+                            match board[index + i].color {
+                                None => { legal_moves.push(index + i); }
+                                Some(color) => {
+                                    if board[index + i].color != Some(color) {
+                                        // If opposing color add the take to legal moves
+                                        legal_moves.push(index + i);
+                                    }
+                                }
+                            }
+                        }
+                        if index > i {
+                            match board[index - i].color {
+                                None => { legal_moves.push(index - i); }
+                                Some(color) => {
+                                    if board[index - i].color != Some(color) {
+                                        // If opposing color add the take to legal moves
+                                        legal_moves.push(index - i);
+                                    }
+                                }
+                            }
+                        }
+                    }
                 },
 
                 Pieces::Pawn { .. } => {
