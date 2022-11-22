@@ -638,17 +638,15 @@ impl App {
             // Highlights the square under the mouse cursor
             rectangle(PALE_YELLOW, rectangle::square((mouse_position[0] / 100f64).floor() * 100f64, (mouse_position[1] / 100f64).floor() * 100f64, 100f64), c.transform, gl);
 
-            for x in 0..8 {
-                for y in 0..8 {
-                    // Get the legal moves
-                    let legal_moves = generate_legal_tile_movements(board, get_array_index(x, y));
-                    let mut draw_position: [usize; 2];
-                    if let Some(_) = legal_moves {
-                        // Highlight the legal moves available
-                        for i in legal_moves.unwrap() {
-                            draw_position = get_render_coords(i);
-                            rectangle(ORANGE, rectangle::square((draw_position[0] * 100) as f64, (draw_position[1] * 100) as f64, 100f64), c.transform, gl);
-                        }
+            if let Some(_) = self.selected_tile {
+                // Get the legal moves
+                let legal_moves = generate_legal_tile_movements(board, self.selected_tile.unwrap());
+                let mut draw_position: [usize; 2];
+                if let Some(_) = legal_moves {
+                    // Highlight the legal moves available
+                    for i in legal_moves.unwrap() {
+                        draw_position = get_render_coords(i);
+                        rectangle(ORANGE, rectangle::square((draw_position[0] * 100) as f64, (draw_position[1] * 100) as f64, 100f64), c.transform, gl);
                     }
                 }
             }
