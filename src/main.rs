@@ -565,6 +565,13 @@ fn generate_legal_tile_movements(board: &[Tile; 64], index: usize) -> Option<Vec
     return Some(legal_moves);
 }
 
+fn play_move(board: &mut [Tile; 64], current: usize, new: usize) {
+    board[new].piece = board[current].piece;
+    board[new].color = board[current].color;
+    board[current].piece = None;
+    board[current].color = None;
+}
+
 #[inline]
 fn get_render_coords(index : usize) -> [usize; 2] {
     let x = index  % 8;
@@ -749,29 +756,26 @@ impl App {
     }
 
     #[inline]
+    // Rework this function
     fn update_selected_tile(&mut self, x_index : f64, y_index : f64, board : &mut[Tile; 64]) {
-        let new_index: usize = get_array_index(x_index as usize, y_index as usize);
-        match self.selected_tile {
-            Some(_) => {
-                let current_tile = self.selected_tile.unwrap();
-                match board[current_tile].piece {
-                    Some(_) => {
-                        if board[current_tile].color != board[new_index].color {
-                            board[new_index].piece = board[current_tile].piece;
-                            board[new_index].color = board[current_tile].color;
-                            board[current_tile].piece = None;
-                            board[current_tile].color = None;
-                        }
-                        self.clear_selected_tile();
-                    },
-                    None => {
-                        self.selected_tile = Some(new_index);
+        let new: usize = get_array_index(x_index as usize, y_index as usize);
+        // New
+        if let Some(_) = self.selected_tile {
+            let current = self.selected_tile.unwrap();
+            if let Some(_) = board[current].piece {
+                let legal_moves = generate_legal_tile_movements(board, current);
+                if let Some(_) = legal_moves {
+                    let legal_moves = legal_moves.unwrap();
+                    if legal_moves.contains(&new) {
+                        play_move(board, current, new);
                     }
                 }
-            },
-            None => {
-                self.selected_tile = Some(new_index);
+                self.clear_selected_tile()
+            } else {
+                self.selected_tile = Some(new);
             }
+        } else {
+            self.selected_tile = Some(new);
         }
     }
 
