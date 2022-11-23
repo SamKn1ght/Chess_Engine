@@ -60,7 +60,7 @@ fn read_fen_string(string : &str) -> [Tile; 64] {
                 82 => board[index].piece = Some(Pieces::Rook {has_moved : false}),
                 78 => board[index].piece = Some(Pieces::Knight),
                 66 => board[index].piece = Some(Pieces::Bishop),
-                80 => board[index].piece = Some(Pieces::Pawn {has_moved : false, double_moved : false}),
+                80 => board[index].piece = Some(Pieces::Pawn {has_moved : false, en_passantable : false}),
                 _ => () // This will never be reached
             }
 
@@ -76,7 +76,7 @@ fn read_fen_string(string : &str) -> [Tile; 64] {
                 114 => board[index].piece = Some(Pieces::Rook {has_moved : false}),
                 110 => board[index].piece = Some(Pieces::Knight),
                 98  => board[index].piece = Some(Pieces::Bishop),
-                112 => board[index].piece = Some(Pieces::Pawn {has_moved : false, double_moved : false}),
+                112 => board[index].piece = Some(Pieces::Pawn {has_moved : false, en_passantable : false}),
                 _ => () // This will never be reached
             }
 
@@ -133,7 +133,7 @@ enum Pieces {
     Rook {has_moved : bool},
     Knight,
     Bishop,
-    Pawn {has_moved : bool, double_moved : bool}
+    Pawn {has_moved : bool, en_passantable : bool}
 }
 
 fn generate_legal_tile_movements(board: &[Tile; 64], index: usize) -> Option<Vec<usize>> {
@@ -487,6 +487,75 @@ fn generate_legal_tile_movements(board: &[Tile; 64], index: usize) -> Option<Vec
                 },
 
                 Pieces::Pawn { .. } => {
+                    let opposing_color = match color {
+                        Colors::White => Colors::Black,
+                        Colors::Black => Colors::White
+                    };
+                    // Pawn movements rely on the color for direction of movement
+                    match color {
+                        Colors::White => {
+                            if tile.tiles_up >= 1 {
+                                // Checks for a single move forwards
+                                if board[index - 8].piece == None {
+                                    legal_moves.push(index - 8);
+                                    // Check eligibility for double move
+                                    // This is enclosed here as a double move can only occur
+                                    // If a single move can also occur
+                                    if let Pieces::Pawn { has_moved: false, .. } = piece {
+                                        // Pawns can only move forward into an empty space
+                                        if tile.tiles_up >= 2 {
+                                            if board[index - 16].piece == None {
+                                                legal_moves.push(index - 16);
+                                            }
+                                            if tile.tiles_left >= 1 && board[index - 1].piece == Some(Pieces::Pawn { has_moved: true, en_passantable: true }) {
+                                                legal_moves.push(index - 9);
+                                            }
+                                            if tile.tiles_right >= 1 && board[index + 1].piece == Some(Pieces::Pawn { has_moved: true, en_passantable: true }) {
+                                                legal_moves.push(index - 7)
+                                            }
+                                        }
+                                    }
+                                }
+                                if tile.tiles_left >= 1 && board[index - 9].color == Some(opposing_color) {
+                                    legal_moves.push(index - 9);
+                                }
+                                if tile.tiles_right >= 1 && board[index - 7].color == Some(opposing_color) {
+                                    legal_moves.push(index - 7);
+                                }
+                            }
+                        },
+                        Colors::Black => {
+                            if tile.tiles_down >= 1 {
+                                // Checks for a single move forwards
+                                if board[index + 8].piece == None {
+                                    legal_moves.push(index + 8);
+                                    // Check eligibility for double move
+                                    // This is enclosed here as a double move can only occur
+                                    // If a single move can also occur
+                                    if let Pieces::Pawn { has_moved: false, .. } = piece {
+                                        // Pawns can only move forward into an empty space
+                                        if tile.tiles_down >= 2 {
+                                            if board[index + 16].piece == None {
+                                                legal_moves.push(index + 16);
+                                            }
+                                            if tile.tiles_left >= 1 && board[index - 1].piece == Some(Pieces::Pawn { has_moved: true, en_passantable: true }) {
+                                                legal_moves.push(index + 7);
+                                            }
+                                            if tile.tiles_right >= 1 && board[index + 1].piece == Some(Pieces::Pawn { has_moved: true, en_passantable: true }) {
+                                                legal_moves.push(index + 9)
+                                            }
+                                        }
+                                    }
+                                }
+                                if tile.tiles_left >= 1 && board[index + 7].color == Some(opposing_color) {
+                                    legal_moves.push(index + 7);
+                                }
+                                if tile.tiles_right >= 1 && board[index + 9].color == Some(opposing_color) {
+                                    legal_moves.push(index + 9);
+                                }
+                            }
+                        }
+                    }
 
                 }
             }
