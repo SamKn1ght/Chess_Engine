@@ -544,7 +544,6 @@ fn generate_legal_tile_movements(board: &[Tile; 64], index: usize) -> Option<Vec
                             }
                         }
                     }
-
                 }
             }
         }
@@ -558,11 +557,18 @@ fn play_move(board: &mut [Tile; 64], current: usize, new: usize) {
         Some(Pieces::King { .. }) => Some(Pieces::King { has_moved: true }),
         Some(Pieces::Rook { .. }) => Some(Pieces::Rook { has_moved: true }),
         Some(Pieces::Pawn { .. }) => {
-            let bigger = cmp::max(new, current);
-            let smaller = cmp::min(new, current);
-            if bigger - smaller == 0o20 {
+            let distance = new.abs_diff(current);
+            if distance == 0o20 {
                 Some(Pieces::Pawn { has_moved: true, en_passantable: true })
             } else {
+                if let Some(Pieces::Pawn { has_moved: true, en_passantable: true }) = board[current + 0o01].piece {
+                    board[current + 0o01].piece = None;
+                    board[current + 0o01].color = None;
+                }
+                if let Some(Pieces::Pawn { has_moved: true, en_passantable: true }) = board[current - 0o01].piece {
+                    board[current - 0o01].piece = None;
+                    board[current - 0o01].color = None;
+                }
                 Some(Pieces::Pawn { has_moved: true, en_passantable: false })
             }
         },
