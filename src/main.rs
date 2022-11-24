@@ -538,14 +538,14 @@ fn generate_legal_tile_movements(board: &[Tile; 64], index: usize) -> Option<Vec
                                             if board[index + 16].piece == None {
                                                 legal_moves.push(index + 0o20);
                                             }
-                                            if tile.tiles_left >= 1 && board[index - 0o01].piece == Some(Pieces::Pawn { has_moved: true, en_passantable: true }) {
-                                                legal_moves.push(index + 0o07);
-                                            }
-                                            if tile.tiles_right >= 1 && board[index + 0o01].piece == Some(Pieces::Pawn { has_moved: true, en_passantable: true }) {
-                                                legal_moves.push(index + 0o11)
-                                            }
                                         }
                                     }
+                                }
+                                if tile.tiles_left >= 1 && board[index - 0o01].piece == Some(Pieces::Pawn { has_moved: true, en_passantable: true }) {
+                                    legal_moves.push(index + 0o07);
+                                }
+                                if tile.tiles_right >= 1 && board[index + 0o01].piece == Some(Pieces::Pawn { has_moved: true, en_passantable: true }) {
+                                    legal_moves.push(index + 0o11)
                                 }
                                 if tile.tiles_left >= 1 && board[index + 0o07].color == Some(opposing_color) {
                                     legal_moves.push(index + 0o07);
