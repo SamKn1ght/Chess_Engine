@@ -188,34 +188,34 @@ fn generate_legal_tile_movements(board: &[Tile; 64], index: usize) -> Option<Vec
                                 }
                             }
                         }
+                    }
 
-                        if tile.tiles_left > 0 && board[index - 0o01].color != Some(color) {
-                            legal_moves.push(index - 1);
+                    if tile.tiles_left > 0 && board[index - 0o01].color != Some(color) {
+                        legal_moves.push(index - 1);
+                    }
+                    if tile.tiles_right > 0 && board[index + 0o01].color != Some(color) {
+                        legal_moves.push(index + 0o01);
+                    }
+                    if tile.tiles_up > 0 {
+                        if board[index - 8].color != Some(color) {
+                            legal_moves.push(index - 0o10);
                         }
-                        if tile.tiles_right > 0 && board[index + 0o01].color != Some(color) {
-                            legal_moves.push(index + 0o01);
+                        if tile.tiles_left > 0 && board[index - 9].color != Some(color) {
+                            legal_moves.push(index - 0o11);
                         }
-                        if tile.tiles_up > 0 {
-                            if board[index - 8].color != Some(color) {
-                                legal_moves.push(index - 0o10);
-                            }
-                            if tile.tiles_left > 0 && board[index - 9].color != Some(color) {
-                                legal_moves.push(index - 0o11);
-                            }
-                            if tile.tiles_right > 0 && board[index - 7].color != Some(color) {
-                                legal_moves.push(index - 0o07);
-                            }
+                        if tile.tiles_right > 0 && board[index - 7].color != Some(color) {
+                            legal_moves.push(index - 0o07);
                         }
-                        if tile.tiles_down > 0 {
-                            if board[index + 0o10].color != Some(color) {
-                                legal_moves.push(index + 8);
-                            }
-                            if tile.tiles_left > 0 && board[index + 0o07].color != Some(color) {
-                                legal_moves.push(index + 0o07);
-                            }
-                            if tile.tiles_right > 0 && board[index + 0o11].color != Some(color) {
-                                legal_moves.push(index + 0o11);
-                            }
+                    }
+                    if tile.tiles_down > 0 {
+                        if board[index + 0o10].color != Some(color) {
+                            legal_moves.push(index + 8);
+                        }
+                        if tile.tiles_left > 0 && board[index + 0o07].color != Some(color) {
+                            legal_moves.push(index + 0o07);
+                        }
+                        if tile.tiles_right > 0 && board[index + 0o11].color != Some(color) {
+                            legal_moves.push(index + 0o11);
                         }
                     }
                 },
