@@ -672,7 +672,8 @@ fn initialise_window(board: &mut[Tile; 64]) {
         gl : GlGraphics::new(opengl),
         piece_images,
         image_locations,
-        selected_tile : None
+        selected_tile : None,
+        turn : Colors::White
     };
 
     let mut mouse_position : [f64; 2] = [0f64, 0f64];
@@ -709,7 +710,8 @@ struct App {
     gl : GlGraphics,
     piece_images : [Texture; 12],
     image_locations : [[Image; 8]; 8],
-    selected_tile : Option<usize>
+    selected_tile : Option<usize>,
+    turn : Colors
 }
 impl App {
     #[inline]
@@ -757,14 +759,16 @@ impl App {
             rectangle(PALE_YELLOW, rectangle::square((mouse_position[0] / 100f64).floor() * 100f64, (mouse_position[1] / 100f64).floor() * 100f64, 100f64), c.transform, gl);
 
             if let Some(_) = self.selected_tile {
-                // Get the legal moves
-                let legal_moves = generate_legal_tile_movements(board, self.selected_tile.unwrap());
-                let mut draw_position: [usize; 2];
-                if let Some(_) = legal_moves {
-                    // Highlight the legal moves available
-                    for i in legal_moves.unwrap() {
-                        draw_position = get_render_coords(i);
-                        rectangle(ORANGE, rectangle::square((draw_position[0] * 100) as f64, (draw_position[1] * 100) as f64, 100f64), c.transform, gl);
+                if Some(self.turn) == board[self.selected_tile.unwrap()].color {
+                    // Get the legal moves
+                    let legal_moves = generate_legal_tile_movements(board, self.selected_tile.unwrap());
+                    let mut draw_position: [usize; 2];
+                    if let Some(_) = legal_moves {
+                        // Highlight the legal moves available
+                        for i in legal_moves.unwrap() {
+                            draw_position = get_render_coords(i);
+                            rectangle(ORANGE, rectangle::square((draw_position[0] * 100) as f64, (draw_position[1] * 100) as f64, 100f64), c.transform, gl);
+                        }
                     }
                 }
             }
@@ -793,14 +797,23 @@ impl App {
         if let Some(_) = self.selected_tile {
             let current = self.selected_tile.unwrap();
             if let Some(_) = board[current].piece {
-                let legal_moves = generate_legal_tile_movements(board, current);
-                if let Some(_) = legal_moves {
-                    let legal_moves = legal_moves.unwrap();
-                    if legal_moves.contains(&new) {
-                        play_move(board, current, new);
+                if Some(self.turn) == board[current].color {
+                    let legal_moves = generate_legal_tile_movements(board, current);
+                    if let Some(_) = legal_moves {
+                        let legal_moves = legal_moves.unwrap();
+                        if legal_moves.contains(&new) {
+                            play_move(board, current, new);
+                            self.turn = match self.turn {
+                                Colors::White => Colors::Black,
+                                Colors::Black => Colors::White
+                            }
+                        }
                     }
+                    self.clear_selected_tile()
                 }
-                self.clear_selected_tile()
+                else {
+                    self.selected_tile = Some(new);
+                }
             } else {
                 self.selected_tile = Some(new);
             }
