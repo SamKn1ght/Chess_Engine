@@ -510,16 +510,10 @@ fn generate_legal_tile_movements(board: &[Tile; 64], index: usize) -> Option<Vec
                                         }
                                     }
                                 }
-                                if tile.tiles_left >= 1 && board[index - 0o01].piece == Some(Pieces::Pawn { has_moved: true, en_passantable: true }) {
+                                if tile.tiles_left >= 1 && (board[index - 0o11].color == Some(opposing_color) || board[index - 0o01].piece == Some(Pieces::Pawn { has_moved: true, en_passantable: true })) {
                                     legal_moves.push(index - 0o11);
                                 }
-                                if tile.tiles_right >= 1 && board[index + 0o01].piece == Some(Pieces::Pawn { has_moved: true, en_passantable: true }) {
-                                    legal_moves.push(index - 0o07)
-                                }
-                                if tile.tiles_left >= 1 && board[index - 0o11].color == Some(opposing_color) {
-                                    legal_moves.push(index - 0o11);
-                                }
-                                if tile.tiles_right >= 1 && board[index - 0o07].color == Some(opposing_color) {
+                                if tile.tiles_right >= 1 && (board[index - 0o07].color == Some(opposing_color) || board[index + 0o01].piece == Some(Pieces::Pawn { has_moved: true, en_passantable: true })) {
                                     legal_moves.push(index - 0o07);
                                 }
                             }
@@ -535,22 +529,16 @@ fn generate_legal_tile_movements(board: &[Tile; 64], index: usize) -> Option<Vec
                                     if let Pieces::Pawn { has_moved: false, .. } = piece {
                                         // Pawns can only move forward into an empty space
                                         if tile.tiles_down >= 2 {
-                                            if board[index + 16].piece == None {
+                                            if board[index + 0o20].piece == None {
                                                 legal_moves.push(index + 0o20);
                                             }
                                         }
                                     }
                                 }
-                                if tile.tiles_left >= 1 && board[index - 0o01].piece == Some(Pieces::Pawn { has_moved: true, en_passantable: true }) {
+                                if tile.tiles_left >= 1 && (board[index + 0o07].color == Some(opposing_color) || board[index - 0o01].piece == Some(Pieces::Pawn { has_moved: true, en_passantable: true })){
                                     legal_moves.push(index + 0o07);
                                 }
-                                if tile.tiles_right >= 1 && board[index + 0o01].piece == Some(Pieces::Pawn { has_moved: true, en_passantable: true }) {
-                                    legal_moves.push(index + 0o11)
-                                }
-                                if tile.tiles_left >= 1 && board[index + 0o07].color == Some(opposing_color) {
-                                    legal_moves.push(index + 0o07);
-                                }
-                                if tile.tiles_right >= 1 && board[index + 0o11].color == Some(opposing_color) {
+                                if tile.tiles_right >= 1 && (board[index + 0o11].color == Some(opposing_color) || board[index + 0o01].piece == Some(Pieces::Pawn { has_moved: true, en_passantable: true })) {
                                     legal_moves.push(index + 0o11);
                                 }
                             }
