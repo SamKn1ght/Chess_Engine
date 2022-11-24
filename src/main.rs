@@ -566,7 +566,30 @@ fn generate_legal_tile_movements(board: &[Tile; 64], index: usize) -> Option<Vec
 }
 
 fn play_move(board: &mut [Tile; 64], current: usize, new: usize) {
-    board[new].piece = board[current].piece;
+    board[new].piece = match board[current].piece {
+        Some(Pieces::King { .. }) => Some(Pieces::King { has_moved: true }),
+        Some(Pieces::Rook { .. }) => Some(Pieces::Rook { has_moved: true }),
+        Some(Pieces::Pawn { .. }) => {
+            match board[current].color {
+                Some(Colors::White) => {
+                    if current >= 48 && current < 56 && new >= 32 && new < 40 {
+                        Some(Pieces::Pawn { has_moved: true, en_passantable: true })
+                    } else {
+                        Some(Pieces::Pawn { has_moved: true, en_passantable: false })
+                    }
+                },
+                Some(Colors::Black) => {
+                    if current >= 8 && current < 16 && new >= 24 && new < 32 {
+                        Some(Pieces::Pawn { has_moved: true, en_passantable: true })
+                    } else {
+                        Some(Pieces::Pawn { has_moved: true, en_passantable: false })
+                    }
+                },
+                None => None // Unreachable arm
+            }
+        },
+        _ => board[current].piece
+    };
     board[new].color = board[current].color;
     board[current].piece = None;
     board[current].color = None;
