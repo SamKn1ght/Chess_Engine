@@ -23,10 +23,10 @@ fn initialise_board() -> [Tile; 64] {
         ];
     for x in 0..8 {
         for y in 0..8 {
-            board[y * 8 + x].tiles_left = x;
-            board[y * 8 + x].tiles_right = 7 - x;
-            board[y * 8 + x].tiles_down = 7 - y;
-            board[y * 8 + x].tiles_up = y;
+            board[get_array_index(x, y)].tiles_left = x;
+            board[get_array_index(x, y)].tiles_right = 7 - x;
+            board[get_array_index(x, y)].tiles_down = 7 - y;
+            board[get_array_index(x, y)].tiles_up = y;
         }
     }
     return board;
@@ -103,17 +103,17 @@ impl Tile {
         match self.color {
             Some(Colors::Black) => index += 6, // Uses the black piece indexes (2nd row)
             Some(Colors::White) => index += 0, // Uses the white piece indexes (1st row)
-            None => return None,               // No piece is in this Tile
+            None => return None                // No piece is in this Tile
         }
 
         match self.piece {
-            Some(Pieces::King {..}) => index += 0, // 1st image in the row
+            Some(Pieces::King { .. }) => index += 0, // 1st image in the row
             Some(Pieces::Queen) => index += 1,     // 2nd image in the row
             Some(Pieces::Bishop) => index += 2,    // 3rd image in the row
             Some(Pieces::Knight) => index += 3,    // 4th image in the row
-            Some(Pieces::Rook {..}) => index += 4, // 5th image in the row
-            Some(Pieces::Pawn {..}) => index += 5, // 6th image in the row
-            None => ()
+            Some(Pieces::Rook { .. }) => index += 4, // 5th image in the row
+            Some(Pieces::Pawn { .. }) => index += 5, // 6th image in the row
+            None => return None
         }
 
         return Some(index);
@@ -507,14 +507,14 @@ fn generate_legal_tile_movements(board: &[Tile; 64], index: usize) -> Option<Vec
                                             if board[index - 0o20].piece == None {
                                                 legal_moves.push(index - 0o20);
                                             }
-                                            if tile.tiles_left >= 1 && board[index - 0o01].piece == Some(Pieces::Pawn { has_moved: true, en_passantable: true }) {
-                                                legal_moves.push(index - 0o11);
-                                            }
-                                            if tile.tiles_right >= 1 && board[index + 0o01].piece == Some(Pieces::Pawn { has_moved: true, en_passantable: true }) {
-                                                legal_moves.push(index - 0o07)
-                                            }
                                         }
                                     }
+                                }
+                                if tile.tiles_left >= 1 && board[index - 0o01].piece == Some(Pieces::Pawn { has_moved: true, en_passantable: true }) {
+                                    legal_moves.push(index - 0o11);
+                                }
+                                if tile.tiles_right >= 1 && board[index + 0o01].piece == Some(Pieces::Pawn { has_moved: true, en_passantable: true }) {
+                                    legal_moves.push(index - 0o07)
                                 }
                                 if tile.tiles_left >= 1 && board[index - 0o11].color == Some(opposing_color) {
                                     legal_moves.push(index - 0o11);
@@ -570,22 +570,12 @@ fn play_move(board: &mut [Tile; 64], current: usize, new: usize) {
         Some(Pieces::King { .. }) => Some(Pieces::King { has_moved: true }),
         Some(Pieces::Rook { .. }) => Some(Pieces::Rook { has_moved: true }),
         Some(Pieces::Pawn { .. }) => {
-            match board[current].color {
-                Some(Colors::White) => {
-                    if current >= 0o60 && current < 0o70 && new >= 0o40 && new < 0o50 {
-                        Some(Pieces::Pawn { has_moved: true, en_passantable: true })
-                    } else {
-                        Some(Pieces::Pawn { has_moved: true, en_passantable: false })
-                    }
-                },
-                Some(Colors::Black) => {
-                    if current >= 0o10 && current < 0o20 && new >= 0o30 && new < 0o40 {
-                        Some(Pieces::Pawn { has_moved: true, en_passantable: true })
-                    } else {
-                        Some(Pieces::Pawn { has_moved: true, en_passantable: false })
-                    }
-                },
-                None => None // Unreachable arm
+            let bigger = cmp::max(new, current);
+            let smaller = cmp::min(new, current);
+            if bigger - smaller == 0o20 {
+                Some(Pieces::Pawn { has_moved: true, en_passantable: true })
+            } else {
+                Some(Pieces::Pawn { has_moved: true, en_passantable: false })
             }
         },
         _ => board[current].piece
