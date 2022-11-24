@@ -587,7 +587,7 @@ fn play_move(board: &mut [Tile; 64], current: usize, new: usize) {
                     }
                 }
                 if let Some(Pieces::Pawn { has_moved: true, en_passantable: true }) = board[current - 0o01].piece {
-                    if board[current - 0o01].color == board[current].color {
+                    if board[current - 0o01].color != board[current].color {
                         board[current - 0o01].piece = None;
                         board[current - 0o01].color = None;
                     }
