@@ -554,7 +554,26 @@ fn generate_legal_tile_movements(board: &[Tile; 64], index: usize) -> Option<Vec
 
 fn play_move(board: &mut [Tile; 64], current: usize, new: usize) {
     board[new].piece = match board[current].piece {
-        Some(Pieces::King { .. }) => Some(Pieces::King { has_moved: true }),
+        Some(Pieces::King { .. }) => {
+            let distance = new.abs_diff(current);
+            if distance == 2 {
+                // At this point the king will have had to have castled
+                if new > current {
+                    // King side castle
+                    // King to +2 | Rook to -2
+                    // Rook is currently at +3
+                    play_move(board, current + 3, current + 1)
+                } else {
+                    // Queen side castle
+                    // King to -2 | Rook to +3
+                    // Rook is currently at -4
+                    play_move(board, current - 4, current - 1)
+                }
+                
+            }
+            // Places king in the new square
+            Some(Pieces::King { has_moved: true })
+        },
         Some(Pieces::Rook { .. }) => Some(Pieces::Rook { has_moved: true }),
         Some(Pieces::Pawn { .. }) => {
             let distance = new.abs_diff(current);
