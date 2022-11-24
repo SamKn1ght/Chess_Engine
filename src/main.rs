@@ -157,16 +157,16 @@ fn generate_legal_tile_movements(board: &[Tile; 64], index: usize) -> Option<Vec
                                 // King side castle
                                 // Check for a rook on the king side, must be of the
                                 // same colour as it has to have not moved
-                                if let Some(Pieces::Rook { has_moved : false }) = board[63].piece {
+                                if let Some(Pieces::Rook { has_moved : false }) = board[0o77].piece {
                                     // Squares in the middle of the two pieces must be empty
-                                    if board[61].piece == None && board[62].piece == None {
-                                        legal_moves.push(index + 2);
+                                    if board[0o76].piece == None && board[0o75].piece == None {
+                                        legal_moves.push(index + 0o02);
                                     }
                                 }
-                                if let Some(Pieces::Rook { has_moved : false }) = board[56].piece {
+                                if let Some(Pieces::Rook { has_moved : false }) = board[0o70].piece {
                                     // Squares in the middle of the two pieces must be empty
-                                    if board[57].piece == None && board[58].piece == None && board[59].piece == None {
-                                        legal_moves.push(index - 2);
+                                    if board[0o71].piece == None && board[0o72].piece == None && board[0o73].piece == None {
+                                        legal_moves.push(index - 0o02);
                                     }
                                 }
                             },
@@ -174,47 +174,47 @@ fn generate_legal_tile_movements(board: &[Tile; 64], index: usize) -> Option<Vec
                                 // King side castle
                                 // Check for a rook on the king side, must be of the
                                 // same colour as it has to have not moved
-                                if let Some(Pieces::Rook { has_moved : false }) = board[7].piece {
+                                if let Some(Pieces::Rook { has_moved : false }) = board[0o07].piece {
                                     // Squares in the middle of the two pieces must be empty
-                                    if board[5].piece == None && board[6].piece == None {
-                                        legal_moves.push(index + 2);
+                                    if board[0o05].piece == None && board[0o06].piece == None {
+                                        legal_moves.push(index + 0o02);
                                     }
                                 }
-                                if let Some(Pieces::Rook { has_moved : false }) = board[0].piece {
+                                if let Some(Pieces::Rook { has_moved : false }) = board[0o00].piece {
                                     // Squares in the middle of the two pieces must be empty
-                                    if board[1].piece == None && board[2].piece == None && board[3].piece == None {
-                                        legal_moves.push(index - 2);
+                                    if board[0o01].piece == None && board[0o02].piece == None && board[0o03].piece == None {
+                                        legal_moves.push(index - 0o02);
                                     }
                                 }
                             }
                         }
 
-                        if tile.tiles_left > 0 && board[index - 1].color != Some(color) {
+                        if tile.tiles_left > 0 && board[index - 0o01].color != Some(color) {
                             legal_moves.push(index - 1);
                         }
-                        if tile.tiles_right > 0 && board[index + 1].color != Some(color) {
-                            legal_moves.push(index + 1);
+                        if tile.tiles_right > 0 && board[index + 0o01].color != Some(color) {
+                            legal_moves.push(index + 0o01);
                         }
                         if tile.tiles_up > 0 {
                             if board[index - 8].color != Some(color) {
-                                legal_moves.push(index - 8);
+                                legal_moves.push(index - 0o10);
                             }
                             if tile.tiles_left > 0 && board[index - 9].color != Some(color) {
-                                legal_moves.push(index - 9);
+                                legal_moves.push(index - 0o11);
                             }
                             if tile.tiles_right > 0 && board[index - 7].color != Some(color) {
-                                legal_moves.push(index - 7);
+                                legal_moves.push(index - 0o07);
                             }
                         }
                         if tile.tiles_down > 0 {
-                            if board[index + 8].color != Some(color) {
+                            if board[index + 0o10].color != Some(color) {
                                 legal_moves.push(index + 8);
                             }
-                            if tile.tiles_left > 0 && board[index + 7].color != Some(color) {
-                                legal_moves.push(index + 7);
+                            if tile.tiles_left > 0 && board[index + 0o07].color != Some(color) {
+                                legal_moves.push(index + 0o07);
                             }
-                            if tile.tiles_right > 0 && board[index + 9].color != Some(color) {
-                                legal_moves.push(index + 9);
+                            if tile.tiles_right > 0 && board[index + 0o11].color != Some(color) {
+                                legal_moves.push(index + 0o11);
                             }
                         }
                     }
@@ -222,7 +222,7 @@ fn generate_legal_tile_movements(board: &[Tile; 64], index: usize) -> Option<Vec
 
                 Pieces::Queen => {
                     // Calculate moves right
-                    for x in 1..tile.tiles_right + 1 {
+                    for x in 0o01..tile.tiles_right + 0o01 {
                         match board[index + x].color {
                             None => { legal_moves.push(index + x); }
                             Some(_) => {
@@ -235,7 +235,7 @@ fn generate_legal_tile_movements(board: &[Tile; 64], index: usize) -> Option<Vec
                         }
                     }
                     // Calculate moves left
-                    for x in 1..tile.tiles_left + 1 {
+                    for x in 0o01..tile.tiles_left + 0o01 {
                         match board[index - x].color {
                             None => { legal_moves.push(index - x); }
                             Some(_) => {
@@ -247,8 +247,8 @@ fn generate_legal_tile_movements(board: &[Tile; 64], index: usize) -> Option<Vec
                             }
                         }
                     }
-                    // Calculate moves up
-                    for y in (8..tile.tiles_down * 8 + 8).step_by(8) {
+                    // Calculate moves down
+                    for y in (0o10..tile.tiles_down * 0o10 + 0o10).step_by(0o10) {
                         match board[index + y].color {
                             None => { legal_moves.push(index + y); }
                             Some(_) => {
@@ -260,8 +260,8 @@ fn generate_legal_tile_movements(board: &[Tile; 64], index: usize) -> Option<Vec
                             }
                         }
                     }
-                    // Calculate moves down
-                    for y in (8..tile.tiles_up * 8 + 8).step_by(8) {
+                    // Calculate moves up
+                    for y in (0o10..tile.tiles_up * 0o10 + 0o10).step_by(0o10) {
                         match board[index - y].color {
                             None => { legal_moves.push(index - y); }
                             Some(_) => {
@@ -278,7 +278,7 @@ fn generate_legal_tile_movements(board: &[Tile; 64], index: usize) -> Option<Vec
                     let max_up_right = cmp::min(tile.tiles_up, tile.tiles_right);
                     let max_down_right = cmp::min(tile.tiles_down, tile.tiles_right);
                     // Calculate moves up and left
-                    for z in (9..max_up_left * 9 + 9).step_by(9) {
+                    for z in (0o11..max_up_left * 0o11 + 0o11).step_by(0o11) {
                         match board[index - z].color {
                             None => { legal_moves.push(index - z); }
                             Some(_) => {
@@ -291,7 +291,7 @@ fn generate_legal_tile_movements(board: &[Tile; 64], index: usize) -> Option<Vec
                         }
                     }
                     // Calculates moves down and right
-                    for z in (9..max_down_right * 9 + 9).step_by(9) {
+                    for z in (0o11..max_down_right * 0o11 + 0o11).step_by(0o11) {
                         match board[index + z].color {
                             None => { legal_moves.push(index + z); }
                             Some(_) => {
@@ -304,7 +304,7 @@ fn generate_legal_tile_movements(board: &[Tile; 64], index: usize) -> Option<Vec
                         }
                     }
                     // Calculate moves up and right
-                    for z in (7..max_up_right * 7 + 7).step_by(7) {
+                    for z in (0o07..max_up_right * 0o07 + 0o07).step_by(0o07) {
                         match board[index - z].color {
                             None => { legal_moves.push(index - z); }
                             Some(_) => {
@@ -317,7 +317,7 @@ fn generate_legal_tile_movements(board: &[Tile; 64], index: usize) -> Option<Vec
                         }
                     }
                     // Calculates moves down and left
-                    for z in (7..max_down_left * 7 + 7).step_by(7) {
+                    for z in (0o07..max_down_left * 0o07 + 0o07).step_by(0o07) {
                         match board[index + z].color {
                             None => { legal_moves.push(index + z); }
                             Some(_) => {
@@ -334,7 +334,7 @@ fn generate_legal_tile_movements(board: &[Tile; 64], index: usize) -> Option<Vec
                 Pieces::Rook { .. } => {
                     // All castling mechanics are handled by the King piece
                     // Calculate moves right
-                    for x in 1..tile.tiles_right + 1 {
+                    for x in 0o01..tile.tiles_right + 0o01 {
                         match board[index + x].color {
                             None => { legal_moves.push(index + x); }
                             Some(_) => {
@@ -347,7 +347,7 @@ fn generate_legal_tile_movements(board: &[Tile; 64], index: usize) -> Option<Vec
                         }
                     }
                     // Calculate moves left
-                    for x in 1..tile.tiles_left + 1 {
+                    for x in 0o01..tile.tiles_left + 0o01 {
                         match board[index - x].color {
                             None => { legal_moves.push(index - x); }
                             Some(_) => {
@@ -359,8 +359,8 @@ fn generate_legal_tile_movements(board: &[Tile; 64], index: usize) -> Option<Vec
                             }
                         }
                     }
-                    // Calculate moves up
-                    for y in (8..tile.tiles_down * 8 + 8).step_by(8) {
+                    // Calculate moves down
+                    for y in (0o10..tile.tiles_down * 0o10 + 0o10).step_by(0o10) {
                         match board[index + y].color {
                             None => { legal_moves.push(index + y); }
                             Some(_) => {
@@ -372,8 +372,8 @@ fn generate_legal_tile_movements(board: &[Tile; 64], index: usize) -> Option<Vec
                             }
                         }
                     }
-                    // Calculate moves down
-                    for y in (8..tile.tiles_up * 8 + 8).step_by(8) {
+                    // Calculate moves up
+                    for y in (0o10..tile.tiles_up * 0o10 + 0o10).step_by(0o10) {
                         match board[index - y].color {
                             None => { legal_moves.push(index - y); }
                             Some(_) => {
@@ -393,7 +393,7 @@ fn generate_legal_tile_movements(board: &[Tile; 64], index: usize) -> Option<Vec
                     let max_up_right = cmp::min(tile.tiles_up, tile.tiles_right);
                     let max_down_right = cmp::min(tile.tiles_down, tile.tiles_right);
                     // Calculate moves up and left
-                    for z in (9..max_up_left * 9 + 9).step_by(9) {
+                    for z in (0o11..max_up_left * 0o11 + 0o11).step_by(0o11) {
                         match board[index - z].color {
                             None => { legal_moves.push(index - z); }
                             Some(_) => {
@@ -406,7 +406,7 @@ fn generate_legal_tile_movements(board: &[Tile; 64], index: usize) -> Option<Vec
                         }
                     }
                     // Calculates moves down and right
-                    for z in (9..max_down_right * 9 + 9).step_by(9) {
+                    for z in (0o11..max_down_right * 0o11 + 0o11).step_by(0o11) {
                         match board[index + z].color {
                             None => { legal_moves.push(index + z); }
                             Some(_) => {
@@ -419,7 +419,7 @@ fn generate_legal_tile_movements(board: &[Tile; 64], index: usize) -> Option<Vec
                         }
                     }
                     // Calculate moves up and right
-                    for z in (7..max_up_right * 7 + 7).step_by(7) {
+                    for z in (0o07..max_up_right * 0o07 + 0o07).step_by(0o07) {
                         match board[index - z].color {
                             None => { legal_moves.push(index - z); }
                             Some(_) => {
@@ -432,7 +432,7 @@ fn generate_legal_tile_movements(board: &[Tile; 64], index: usize) -> Option<Vec
                         }
                     }
                     // Calculates moves down and left
-                    for z in (7..max_down_left * 7 + 7).step_by(7) {
+                    for z in (0o07..max_down_left * 0o07 + 0o07).step_by(0o07) {
                         match board[index + z].color {
                             None => { legal_moves.push(index + z); }
                             Some(_) => {
@@ -447,7 +447,7 @@ fn generate_legal_tile_movements(board: &[Tile; 64], index: usize) -> Option<Vec
                 },
 
                 Pieces::Knight => {
-                    const OFFSETS: [usize; 4] = [6, 10, 15, 17];
+                    const OFFSETS: [usize; 4] = [0o06, 0o12, 0o17, 0o21];
                     let positive_condition_evals: [bool; 4] = [
                         tile.tiles_left >= 2 && tile.tiles_down >= 1,
                         tile.tiles_right >= 2 && tile.tiles_down >= 1,
@@ -496,39 +496,39 @@ fn generate_legal_tile_movements(board: &[Tile; 64], index: usize) -> Option<Vec
                         Colors::White => {
                             if tile.tiles_up >= 1 {
                                 // Checks for a single move forwards
-                                if board[index - 8].piece == None {
-                                    legal_moves.push(index - 8);
+                                if board[index - 0o10].piece == None {
+                                    legal_moves.push(index - 0o10);
                                     // Check eligibility for double move
                                     // This is enclosed here as a double move can only occur
                                     // If a single move can also occur
                                     if let Pieces::Pawn { has_moved: false, .. } = piece {
                                         // Pawns can only move forward into an empty space
                                         if tile.tiles_up >= 2 {
-                                            if board[index - 16].piece == None {
-                                                legal_moves.push(index - 16);
+                                            if board[index - 0o20].piece == None {
+                                                legal_moves.push(index - 0o20);
                                             }
-                                            if tile.tiles_left >= 1 && board[index - 1].piece == Some(Pieces::Pawn { has_moved: true, en_passantable: true }) {
-                                                legal_moves.push(index - 9);
+                                            if tile.tiles_left >= 1 && board[index - 0o01].piece == Some(Pieces::Pawn { has_moved: true, en_passantable: true }) {
+                                                legal_moves.push(index - 0o11);
                                             }
-                                            if tile.tiles_right >= 1 && board[index + 1].piece == Some(Pieces::Pawn { has_moved: true, en_passantable: true }) {
-                                                legal_moves.push(index - 7)
+                                            if tile.tiles_right >= 1 && board[index + 0o01].piece == Some(Pieces::Pawn { has_moved: true, en_passantable: true }) {
+                                                legal_moves.push(index - 0o07)
                                             }
                                         }
                                     }
                                 }
-                                if tile.tiles_left >= 1 && board[index - 9].color == Some(opposing_color) {
-                                    legal_moves.push(index - 9);
+                                if tile.tiles_left >= 1 && board[index - 0o11].color == Some(opposing_color) {
+                                    legal_moves.push(index - 0o11);
                                 }
-                                if tile.tiles_right >= 1 && board[index - 7].color == Some(opposing_color) {
-                                    legal_moves.push(index - 7);
+                                if tile.tiles_right >= 1 && board[index - 0o07].color == Some(opposing_color) {
+                                    legal_moves.push(index - 0o07);
                                 }
                             }
                         },
                         Colors::Black => {
                             if tile.tiles_down >= 1 {
                                 // Checks for a single move forwards
-                                if board[index + 8].piece == None {
-                                    legal_moves.push(index + 8);
+                                if board[index + 0o10].piece == None {
+                                    legal_moves.push(index + 0o10);
                                     // Check eligibility for double move
                                     // This is enclosed here as a double move can only occur
                                     // If a single move can also occur
@@ -536,22 +536,22 @@ fn generate_legal_tile_movements(board: &[Tile; 64], index: usize) -> Option<Vec
                                         // Pawns can only move forward into an empty space
                                         if tile.tiles_down >= 2 {
                                             if board[index + 16].piece == None {
-                                                legal_moves.push(index + 16);
+                                                legal_moves.push(index + 0o20);
                                             }
-                                            if tile.tiles_left >= 1 && board[index - 1].piece == Some(Pieces::Pawn { has_moved: true, en_passantable: true }) {
-                                                legal_moves.push(index + 7);
+                                            if tile.tiles_left >= 1 && board[index - 0o01].piece == Some(Pieces::Pawn { has_moved: true, en_passantable: true }) {
+                                                legal_moves.push(index + 0o07);
                                             }
-                                            if tile.tiles_right >= 1 && board[index + 1].piece == Some(Pieces::Pawn { has_moved: true, en_passantable: true }) {
-                                                legal_moves.push(index + 9)
+                                            if tile.tiles_right >= 1 && board[index + 0o01].piece == Some(Pieces::Pawn { has_moved: true, en_passantable: true }) {
+                                                legal_moves.push(index + 0o11)
                                             }
                                         }
                                     }
                                 }
-                                if tile.tiles_left >= 1 && board[index + 7].color == Some(opposing_color) {
-                                    legal_moves.push(index + 7);
+                                if tile.tiles_left >= 1 && board[index + 0o07].color == Some(opposing_color) {
+                                    legal_moves.push(index + 0o07);
                                 }
-                                if tile.tiles_right >= 1 && board[index + 9].color == Some(opposing_color) {
-                                    legal_moves.push(index + 9);
+                                if tile.tiles_right >= 1 && board[index + 0o11].color == Some(opposing_color) {
+                                    legal_moves.push(index + 0o11);
                                 }
                             }
                         }
@@ -572,14 +572,14 @@ fn play_move(board: &mut [Tile; 64], current: usize, new: usize) {
         Some(Pieces::Pawn { .. }) => {
             match board[current].color {
                 Some(Colors::White) => {
-                    if current >= 48 && current < 56 && new >= 32 && new < 40 {
+                    if current >= 0o60 && current < 0o70 && new >= 0o40 && new < 0o50 {
                         Some(Pieces::Pawn { has_moved: true, en_passantable: true })
                     } else {
                         Some(Pieces::Pawn { has_moved: true, en_passantable: false })
                     }
                 },
                 Some(Colors::Black) => {
-                    if current >= 8 && current < 16 && new >= 24 && new < 32 {
+                    if current >= 0o10 && current < 0o20 && new >= 0o30 && new < 0o40 {
                         Some(Pieces::Pawn { has_moved: true, en_passantable: true })
                     } else {
                         Some(Pieces::Pawn { has_moved: true, en_passantable: false })
